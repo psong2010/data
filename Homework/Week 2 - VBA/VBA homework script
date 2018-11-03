@@ -1,0 +1,101 @@
+Sub multiple_year_stock():
+
+    Dim Total_Volume, Percent_Change, Opening, Closing, Yearly_Change, Max_percent, Min_percent, Max_volume As Double
+    Dim summary_table_row, Row_Count As Integer
+    
+    Total_Volume = 0
+    summary_table_row = 2
+    Row_Count = 0
+    
+    For Each ws In Worksheets
+        
+        LastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+  
+        ws.Cells(1, 9).Value = "Ticker"
+        ws.Cells(1, 10).Value = "Yearly Change"
+        ws.Cells(1, 11).Value = "Percent Change"
+        ws.Cells(1, 12).Value = "Total Stock Volume"
+        ws.Cells(1, 16).Value = "Ticker"
+        ws.Cells(1, 17).Value = "Value"
+        
+        ws.Cells(2, 15).Value = "Greatest % Increase"
+        ws.Cells(3, 15).Value = "Greatest % Decrease"
+        ws.Cells(4, 15).Value = "Greatest Total Volume"
+        
+        For i = 2 To LastRow
+            
+            If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+                ticker_name = ws.Cells(i, 1).Value
+                Total_Volume = Total_Volume + ws.Cells(i, 7).Value
+                
+                Opening = ws.Cells(i - Row_Count, 3).Value
+                
+                Closing = ws.Cells(i, 6).Value
+                Yearly_Change = Closing - Opening
+               
+                If Opening = 0 Then
+                    Percent_Change = "N/A"
+                Else
+                    Percent_Change = (Closing - Opening) / Opening
+                End If
+               
+              
+                If Percent_Change < 0 Or Percent_Change = "N/A" Then
+                    ws.Range("K" & summary_table_row).Interior.ColorIndex = 3
+                Else
+                    ws.Range("K" & summary_table_row).Interior.ColorIndex = 4
+                End If
+                
+                
+                If Percent_Change <> "N/A" Then
+                    ws.Range("K" & summary_table_row).Value = FormatPercent(Percent_Change)
+                Else
+                    ws.Range("K" & summary_table_row).Value = (Percent_Change)
+                End If
+                
+                ws.Range("I" & summary_table_row).Value = ticker_name
+                ws.Range("J" & summary_table_row).Value = Yearly_Change
+                ws.Range("L" & summary_table_row).Value = Total_Volume
+                
+              
+                summary_table_row = summary_table_row + 1
+                
+                
+                Row_Count = 0
+               
+                Total_Volume = 0
+            
+      
+            Else
+                Row_Count = Row_Count + 1
+                Total_Volume = Total_Volume + ws.Cells(i, 7).Value
+            End If
+            
+        Next i
+        LastRowSummary = ws.Cells(Rows.Count, 9).End(xlUp).Row
+        
+        
+        Max_percent = Application.WorksheetFunction.Max(ws.Range("k:k"))
+        Min_percent = Application.WorksheetFunction.Min(ws.Range("k:k"))
+        Max_volume = Application.WorksheetFunction.Max(ws.Range("l:l"))
+        
+        ws.Cells(2, 17).Value = FormatPercent(Max_percent)
+        ws.Cells(3, 17).Value = FormatPercent(Min_percent)
+        ws.Cells(4, 17).Value = Max_volume
+        
+        
+        For k = 2 To LastRowSummary
+            For j = 11 To 12
+                If ws.Cells(k, j).Value = Max_percent Then
+                    ws.Cells(2, 16).Value = ws.Cells(k, 9).Value
+                ElseIf ws.Cells(k, j).Value = Min_percent Then
+                    ws.Cells(3, 16).Value = ws.Cells(k, 9).Value
+                ElseIf ws.Cells(k, j).Value = Max_volume Then
+                    ws.Cells(4, 16).Value = ws.Cells(k, 9).Value
+                End If
+            Next j
+        Next k
+        summary_table_row = 2
+    Next ws
+    
+End Sub
